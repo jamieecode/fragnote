@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: fragnote
+      POSTGRES_PASSWORD: fragnote
+      POSTGRES_DB: fragnote
+    volumes:
+      - fragnote_pgdata:/var/lib/postgresql/data
+
+volumes:
+  fragnote_pgdata:

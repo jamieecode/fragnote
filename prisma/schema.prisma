@@ -1,0 +1,197 @@
+// 향수 앱 - Prisma 스키마 (기획서 v6 기준)
+// DB: Neon (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// User
+// ---------------------------------------------------------------------------
+// 인증 전략: Auth.js Prisma Adapter를 쓰지 않고 JWT 세션 전략을 사용한다.
+// Account/Session/VerificationToken 테이블이 필요 없고, signIn 콜백에서
+// 아래 User 테이블에 직접 upsert하는 방식으로 연동한다.
+
+enum AuthProvider {
+  KAKAO
+  GOOGLE
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  provider         AuthProvider
+  nickname         String
+  profileImageUrl  String?
+  createdAt        DateTime @default(now())
+
+  collections      Collection[]
+  wishlist         Wishlist[]
+  usageLogs        UsageLog[]
+  notePreferences  UserNotePreference[]
+}
+
+// ---------------------------------------------------------------------------
+// 향수 마스터 데이터 (시딩 카탈로그)
+// ---------------------------------------------------------------------------
+
+model Brand {
+  id       String    @id @default(cuid())
+  name     String
+  nameEn   String?
+  country  String?
+
+  perfumes Perfume[]
+}
+
+enum NoteFamily {
+  CITRUS
+  FLORAL
+  WOODY
+  ORIENTAL_AMBER
+  FRESH
+  FOUGERE
+  CHYPRE
+  GOURMAND
+}
+
+model Note {
+  id       String     @id @default(cuid())
+  name     String
+  nameEn   String?
+  family   NoteFamily
+
+  perfumeNotes PerfumeNote[]
+  userPreferences UserNotePreference[]
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNISEX
+}
+
+model Perfume {
+  id           String   @id @default(cuid())
+  brandId      String
+  brand        Brand    @relation(fields: [brandId], references: [id])
+  name         String
+  nameEn       String?
+  family       NoteFamily?      // 대표 계열 (PerfumeNote로부터 산출해 캐싱 — 시딩 스크립트에서 동기화 필수)
+  targetGender Gender?          // 제품의 타겟 성별 (유저 성별 아님, 이름 혼동 주의)
+  volumeMl     Int?             // 표준 판매 용량 (참고값, 실제 보유 용량은 Collection.totalMl)
+  imageUrl     String?          // 카탈로그 이미지 (없으면 프론트에서 색상 블록으로 대체)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  notes        PerfumeNote[]
+  collections  Collection[]
+  wishlist     Wishlist[]
+
+  @@index([brandId])
+}
+
+enum NotePosition {
+  TOP
+  MIDDLE
+  BASE
+}
+
+model PerfumeNote {
+  id        String       @id @default(cuid())
+  perfumeId String
+  perfume   Perfume      @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  noteId    String
+  note      Note         @relation(fields: [noteId], references: [id])
+  position  NotePosition
+  intensity Int          @default(1) // 1~5, 유사도 계산 시 가중치로 사용 — 범위 검증은 앱 레벨에서
+
+  @@unique([perfumeId, noteId, position])
+  @@index([noteId])
+}
+
+// ---------------------------------------------------------------------------
+// 컬렉션 (보유 향수) — 다중 보유 지원, 잔량/변질 관리 포함
+// ---------------------------------------------------------------------------
+
+model Collection {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  perfumeId      String
+  perfume        Perfume   @relation(fields: [perfumeId], references: [id])
+
+  totalMl        Float               // 이 개별 항목의 용량 (정품/미니어처 등 다를 수 있음)
+  initialMl      Float               // 등록 시점 추정 잔량
+  currentMl      Float               // 이후 로그로 계속 차감되는 현재 추정치 — 0 미만 방지는 앱 레벨에서 clamp 처리
+
+  isPreOwned     Boolean   @default(false) // 등록 시점에 이미 쓰던 향수였는지
+  openedAt       DateTime?           // 개봉일 (변질 위험도 계산용, 미개봉이면 null)
+  lastAdjustedAt DateTime?           // 마지막 수동 보정 시점
+
+  purchasedAt    DateTime?
+  price          Int?
+  photoUrl       String?             // 실물 사진 (선택)
+
+  label          String?             // 다중 보유 구분용 라벨 (예: "정품", "미니어처")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  usageLogs      UsageLog[]
+
+  @@index([userId, perfumeId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  perfumeId String
+  perfume   Perfume  @relation(fields: [perfumeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, perfumeId])
+}
+
+// ---------------------------------------------------------------------------
+// 사용 로그 — collectionId 참조 (다중 보유 대응)
+// ---------------------------------------------------------------------------
+
+model UsageLog {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  date              DateTime @default(now())
+  temperatureCelsius Float?   // 추천 엔진의 날씨 가중치 계산용 (구조화된 값)
+  weatherCondition   String?  // 표시용 요약 (예: "고온다습", "맑음") — 계산에는 미사용
+  location           String?  // 실내/실외 등
+  sprayCount         Int      @default(3)
+
+  createdAt    DateTime   @default(now())
+
+  @@index([collectionId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// 취향 프로필
+// ---------------------------------------------------------------------------
+
+model UserNotePreference {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id])
+  weight    Float    @default(0) // 온보딩 설문 결과 가중치, 추천 엔진의 유사도 계산 입력값
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, noteId])
+}
