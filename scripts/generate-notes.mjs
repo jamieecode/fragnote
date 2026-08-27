@@ -30,7 +30,7 @@ if (!INPUT_PATH) {
 }
 
 // 테스트 시 작게 잡고, 전체 실행할 땐 Infinity로 변경
-const LIMIT = 10;
+const LIMIT = Infinity;
 const CONCURRENCY = 3; // 동시 요청 수 (레이트리밋 방지)
 
 const anthropic = new Anthropic(); // ANTHROPIC_API_KEY 환경변수 자동 사용
@@ -70,7 +70,7 @@ async function generateOne(row) {
     try {
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-5",
-        max_tokens: 500,
+        max_tokens: 800,
         messages: [{ role: "user", content: prompt }],
       });
 

@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "seed:notes": "node scripts/generate-notes.mjs"
+    "seed:notes": "node scripts/generate-notes.mjs",
+    "db:seed": "node scripts/seed-catalog.mjs"
   },
   "dependencies": {
     "next": "16.3.1",

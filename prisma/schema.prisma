@@ -41,7 +41,7 @@ model User {
 
 model Brand {
   id       String    @id @default(cuid())
-  name     String
+  name     String    @unique
   nameEn   String?
   country  String?
 
@@ -61,7 +61,7 @@ enum NoteFamily {
 
 model Note {
   id       String     @id @default(cuid())
-  name     String
+  name     String     @unique
   nameEn   String?
   family   NoteFamily
 
@@ -92,6 +92,7 @@ model Perfume {
   collections  Collection[]
   wishlist     Wishlist[]
 
+  @@unique([brandId, name])
   @@index([brandId])
 }
 
