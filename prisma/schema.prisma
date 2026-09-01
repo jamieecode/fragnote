@@ -127,8 +127,8 @@ model Collection {
   perfume        Perfume   @relation(fields: [perfumeId], references: [id])
 
   totalMl        Float               // 이 개별 항목의 용량 (정품/미니어처 등 다를 수 있음)
-  initialMl      Float               // 등록 시점 추정 잔량
-  currentMl      Float               // 이후 로그로 계속 차감되는 현재 추정치 — 0 미만 방지는 앱 레벨에서 clamp 처리
+  initialMl      Float               // 재계산의 기준점 — 등록 시점 값이며, 수동 보정을 하면 그 시점 값으로 갱신됨
+  currentMl      Float               // initialMl에서 (lastAdjustedAt 이후의) 로그를 재순회해 계산한 현재 추정치 — 0 미만 방지는 앱 레벨에서 clamp 처리
 
   isPreOwned     Boolean   @default(false) // 등록 시점에 이미 쓰던 향수였는지
   openedAt       DateTime?           // 개봉일 (변질 위험도 계산용, 미개봉이면 null)

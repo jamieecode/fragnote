@@ -55,6 +55,9 @@ export default async function LoginPage() {
             <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>{providerLabel} 계정으로 로그인했어요</div>
             <div style={{ fontSize: 14, color: "var(--text-muted)" }}>{dbUser.nickname}님, 환영해요</div>
           </div>
+          <Link href="/collection" style={{ ...primaryButtonStyle, marginTop: 0, textDecoration: "none", display: "inline-block" }}>
+            내 향수장으로 가기
+          </Link>
           <Link href="/onboarding" style={{ fontSize: 13, color: "var(--text-muted)" }}>
             취향 다시 설정하기
           </Link>
