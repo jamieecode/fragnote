@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { pageStyle, centeredMessageStyle, primaryButtonStyle } from "@/lib/ui-styles";
@@ -35,6 +37,10 @@ export default async function LoginPage() {
       );
     }
 
+    // 아직 취향 설정을 안 한 유저는 온보딩으로 바로 보낸다.
+    const prefCount = await prisma.userNotePreference.count({ where: { userId: session.user.id } });
+    if (prefCount === 0) redirect("/onboarding");
+
     const providerLabel = dbUser.provider === "KAKAO" ? "카카오" : "구글";
 
     return (
@@ -49,6 +55,9 @@ export default async function LoginPage() {
             <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>{providerLabel} 계정으로 로그인했어요</div>
             <div style={{ fontSize: 14, color: "var(--text-muted)" }}>{dbUser.nickname}님, 환영해요</div>
           </div>
+          <Link href="/onboarding" style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            취향 다시 설정하기
+          </Link>
           {logoutButton}
         </div>
       </div>
