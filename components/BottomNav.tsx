@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// 통계/마이 화면은 아직 없어서, 만들어진 라우트만 실제 링크로 연결한다.
+// 마이 화면은 아직 없어서, 만들어진 라우트만 실제 링크로 연결한다.
 const NAV_ITEMS = [
   { key: "home", label: "홈", href: "/" },
   { key: "collection", label: "컬렉션", href: "/collection" },
   { key: "rec", label: "추천", href: "/recommend" },
-  { key: "stats", label: "통계", href: null },
+  { key: "stats", label: "통계", href: "/stats" },
   { key: "me", label: "마이", href: null },
 ] as const;
 

@@ -62,8 +62,18 @@ export function percentOf(currentMl: number, totalMl: number) {
   return Math.round((currentMl / totalMl) * 100);
 }
 
+// 서버 타임존과 무관하게 항상 KST(UTC+9) 기준 달력 값을 쓰기 위한 변환 —
+// lib/stats-helpers.ts의 kstParts와 같은 이유(자정 근처 오프바이원 방지).
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+function kstYearMonth(date: Date) {
+  const shifted = new Date(date.getTime() + KST_OFFSET_MS);
+  return { year: shifted.getUTCFullYear(), month: shifted.getUTCMonth() };
+}
+
 function monthsBetween(from: Date, to: Date) {
-  return (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+  const f = kstYearMonth(from);
+  const t = kstYearMonth(to);
+  return (t.year - f.year) * 12 + (t.month - f.month);
 }
 
 export type RiskTier = "safe" | "caution" | "check";
