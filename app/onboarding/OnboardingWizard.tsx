@@ -50,7 +50,7 @@ export default function OnboardingWizard() {
               언제든 마이페이지에서 다시 설정할 수 있어요
             </div>
           </div>
-          <Link href="/" style={{ ...primaryButtonStyle, textDecoration: "none", display: "inline-block" }}>
+          <Link href="/home" style={{ ...primaryButtonStyle, textDecoration: "none", display: "inline-block" }}>
             홈으로 이동
           </Link>
         </div>

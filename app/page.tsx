@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,19 +9,6 @@ export default async function LoginPage() {
   if (session?.user?.id) {
     const dbUser = await prisma.user.findUnique({ where: { id: session.user.id } });
 
-    const logoutButton = (
-      <form
-        action={async () => {
-          "use server";
-          await signOut();
-        }}
-      >
-        <button type="submit" style={primaryButtonStyle}>
-          로그아웃
-        </button>
-      </form>
-    );
-
     // 세션 쿠키는 유효한데 DB의 User row가 사라진 경우(수동 정리, 로컬 DB 리셋 등) —
     // provider/nickname을 알 수 없으니 잘못된 값을 보여주는 대신 별도 안내를 띄운다.
     if (!dbUser) {
@@ -31,40 +17,24 @@ export default async function LoginPage() {
           <div style={centeredMessageStyle}>
             <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 8 }}>계정 정보를 찾을 수 없어요</div>
             <div style={{ fontSize: 14, color: "var(--text-muted)" }}>로그아웃 후 다시 로그인해주세요</div>
-            {logoutButton}
+            <form
+              action={async () => {
+                "use server";
+                await signOut();
+              }}
+            >
+              <button type="submit" style={primaryButtonStyle}>
+                로그아웃
+              </button>
+            </form>
           </div>
         </div>
       );
     }
 
-    // 아직 취향 설정을 안 한 유저는 온보딩으로 바로 보낸다.
+    // 아직 취향 설정을 안 한 유저는 온보딩으로, 이미 설정한 유저는 홈으로 보낸다.
     const prefCount = await prisma.userNotePreference.count({ where: { userId: session.user.id } });
-    if (prefCount === 0) redirect("/onboarding");
-
-    const providerLabel = dbUser.provider === "KAKAO" ? "카카오" : "구글";
-
-    return (
-      <div style={pageStyle}>
-        <div style={centeredMessageStyle}>
-          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 8 }}>{providerLabel} 계정으로 로그인했어요</div>
-            <div style={{ fontSize: 14, color: "var(--text-muted)" }}>{dbUser.nickname}님, 환영해요</div>
-          </div>
-          <Link href="/collection" style={{ ...primaryButtonStyle, marginTop: 0, textDecoration: "none", display: "inline-block" }}>
-            내 향수장으로 가기
-          </Link>
-          <Link href="/onboarding" style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            취향 다시 설정하기
-          </Link>
-          {logoutButton}
-        </div>
-      </div>
-    );
+    redirect(prefCount === 0 ? "/onboarding" : "/home");
   }
 
   return (
