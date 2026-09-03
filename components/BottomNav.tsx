@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// 마이 화면은 아직 없어서, 만들어진 라우트만 실제 링크로 연결한다.
 const NAV_ITEMS = [
   { key: "home", label: "홈", href: "/home" },
   { key: "collection", label: "컬렉션", href: "/collection" },
   { key: "rec", label: "추천", href: "/recommend" },
   { key: "stats", label: "통계", href: "/stats" },
-  { key: "me", label: "마이", href: null },
+  { key: "me", label: "마이", href: "/mypage" },
 ] as const;
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -51,26 +50,14 @@ export default function BottomNav() {
   return (
     <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--surface)", borderTop: "1px solid var(--border-soft)", display: "flex", padding: "8px 4px 12px" }}>
       {NAV_ITEMS.map((item) => {
-        const active = item.href !== null && pathname.startsWith(item.href);
+        const active = pathname.startsWith(item.href);
         const color = active ? "var(--accent)" : "var(--text-faint)";
-        const content = (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", color }}>
-            {ICONS[item.key]}
-            <span style={{ fontSize: 10.5, fontWeight: 600 }}>{item.label}</span>
-          </div>
-        );
-
-        if (!item.href) {
-          return (
-            <div key={item.key} style={{ flex: 1, opacity: 0.4 }}>
-              {content}
-            </div>
-          );
-        }
-
         return (
           <Link key={item.key} href={item.href} style={{ flex: 1, textDecoration: "none" }}>
-            {content}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", color }}>
+              {ICONS[item.key]}
+              <span style={{ fontSize: 10.5, fontWeight: 600 }}>{item.label}</span>
+            </div>
           </Link>
         );
       })}

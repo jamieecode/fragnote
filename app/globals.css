@@ -12,10 +12,35 @@
   --accent-soft: oklch(90% 0.008 250);
   --accent-text: oklch(30% 0.02 250);
   --danger: oklch(55% 0.15 25);
+  --danger-soft: oklch(93% 0.04 25);
+  --used-bg: oklch(92% 0.005 250);
+  --used-text: oklch(50% 0.006 250);
+  --warn-bg: oklch(93% 0.05 40);
+  --warn-text: oklch(42% 0.1 40);
+}
+
+[data-theme="dark"] {
+  --bg: oklch(15% 0.006 250);
+  --surface: oklch(20% 0.008 250);
+  --text: oklch(93% 0.004 250);
+  --text-muted: oklch(65% 0.008 250);
+  --text-faint: oklch(48% 0.008 250);
+  --border: oklch(32% 0.01 250);
+  --border-soft: oklch(26% 0.008 250);
+  --accent: oklch(55% 0.04 250);
+  --accent-soft: oklch(28% 0.035 250);
+  --accent-text: oklch(78% 0.05 250);
+  --danger: oklch(62% 0.16 25);
+  --danger-soft: oklch(30% 0.06 25);
+  --used-bg: oklch(26% 0.008 250);
+  --used-text: oklch(60% 0.008 250);
+  --warn-bg: oklch(28% 0.06 40);
+  --warn-text: oklch(75% 0.1 40);
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-noto-sans-kr), system-ui, sans-serif;
+  transition: background 0.15s ease, color 0.15s ease;
 }
