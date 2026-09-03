@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
-import { toggleWishlist } from "./actions";
+import { toggleWishlist } from "@/lib/wishlist-actions";
 import { diversify, type RecommendItem } from "@/lib/recommend-scoring";
 import type { NoteFamily } from "@prisma/client";
 
@@ -123,26 +124,28 @@ export default function RecommendView({
           const isWished = wished.has(it.perfumeId);
           return (
             <div key={it.collectionId ?? it.perfumeId} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, border: "1px solid var(--border-soft)", borderRadius: 16, background: "var(--surface)" }}>
-              <div style={{ width: 52, height: 52, borderRadius: 12, background: it.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
+              <Link href={`/perfume/${it.perfumeId}`} style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, textDecoration: "none", color: "inherit" }}>
+                <div style={{ width: 52, height: 52, borderRadius: 12, background: it.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.name}</div>
-                  {isTaste && it.owned && (
-                    <div style={{ padding: "2px 7px", borderRadius: 999, fontSize: 9.5, fontWeight: 700, background: "var(--border-soft)", color: "var(--text-muted)", flexShrink: 0 }}>보유중</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.name}</div>
+                    {isTaste && it.owned && (
+                      <div style={{ padding: "2px 7px", borderRadius: 999, fontSize: 9.5, fontWeight: 700, background: "var(--border-soft)", color: "var(--text-muted)", flexShrink: 0 }}>보유중</div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginBottom: 6 }}>{it.brand}</div>
+                  {it.reasons.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {it.reasons.map((tag) => (
+                        <div key={tag} style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10.5, background: "var(--accent-soft)", color: "var(--accent-text)" }}>
+                          {tag}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-                <div style={{ fontSize: 11.5, color: "var(--text-faint)", marginBottom: 6 }}>{it.brand}</div>
-                {it.reasons.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {it.reasons.map((tag) => (
-                      <div key={tag} style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10.5, background: "var(--accent-soft)", color: "var(--accent-text)" }}>
-                        {tag}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              </Link>
 
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 {isTaste && (

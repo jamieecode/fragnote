@@ -192,11 +192,13 @@ export default function CollectionView({ items, wishlistItems }: { items: Collec
             {wishlistItems.length === 0 && <div style={{ padding: "40px 0", textAlign: "center", fontSize: 13, color: "var(--text-muted)" }}>위시리스트가 비어있어요</div>}
             {wishlistItems.map((w) => (
               <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, border: "1px solid var(--border-soft)", borderRadius: 14, background: "var(--surface)" }}>
-                <div style={{ width: 52, height: 52, borderRadius: 11, background: w.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{w.brand}</div>
-                </div>
+                <Link href={`/perfume/${w.perfumeId}`} style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, textDecoration: "none", color: "inherit" }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 11, background: w.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.name}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{w.brand}</div>
+                  </div>
+                </Link>
                 {w.owned ? (
                   <span style={{ flexShrink: 0, padding: "8px 12px", borderRadius: 10, fontSize: 12, fontWeight: 700, border: "1.5px solid var(--border)", background: "var(--used-bg)", color: "var(--used-text)" }}>보유중</span>
                 ) : (

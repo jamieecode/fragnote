@@ -18,6 +18,7 @@ export async function toggleWishlist(perfumeId: string): Promise<boolean> {
     await prisma.wishlist.deleteMany({ where: { id: existing.id } });
     revalidatePath("/recommend");
     revalidatePath("/collection");
+    revalidatePath(`/perfume/${perfumeId}`);
     return false;
   }
 
@@ -31,5 +32,6 @@ export async function toggleWishlist(perfumeId: string): Promise<boolean> {
   }
   revalidatePath("/recommend");
   revalidatePath("/collection");
+  revalidatePath(`/perfume/${perfumeId}`);
   return true;
 }
