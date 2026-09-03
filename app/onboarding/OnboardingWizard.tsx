@@ -6,15 +6,16 @@ import Link from "next/link";
 import { saveTastePreferences } from "./actions";
 import { pageStyle, centeredMessageStyle, primaryButtonStyle } from "@/lib/ui-styles";
 
-const FAMILIES: Record<NoteFamily, { label: string; tint: string }> = {
-  CITRUS: { label: "시트러스", tint: "oklch(91% 0.025 95)" },
-  FLORAL: { label: "플로럴", tint: "oklch(91% 0.02 350)" },
-  WOODY: { label: "우디", tint: "oklch(87% 0.015 60)" },
-  ORIENTAL_AMBER: { label: "오리엔탈 · 앰버", tint: "oklch(89% 0.025 50)" },
-  FRESH: { label: "프레시", tint: "oklch(91% 0.02 210)" },
-  FOUGERE: { label: "푸제르", tint: "oklch(89% 0.02 140)" },
-  CHYPRE: { label: "시프레", tint: "oklch(88% 0.018 300)" },
-  GOURMAND: { label: "구르망", tint: "oklch(89% 0.022 70)" },
+// example: 계열 이름이 생소한 사람도 감 잡을 수 있게 붙이는 대표 노트 예시
+const FAMILIES: Record<NoteFamily, { label: string; example: string; tint: string }> = {
+  CITRUS: { label: "시트러스", example: "베르가못 · 레몬처럼 상큼한 향", tint: "oklch(91% 0.025 95)" },
+  FLORAL: { label: "플로럴", example: "장미 · 자스민 같은 꽃향", tint: "oklch(91% 0.02 350)" },
+  WOODY: { label: "우디", example: "샌달우드 · 시더 같은 나무향", tint: "oklch(87% 0.015 60)" },
+  ORIENTAL_AMBER: { label: "오리엔탈 · 앰버", example: "바닐라 · 앰버처럼 따뜻하고 짙은 향", tint: "oklch(89% 0.025 50)" },
+  FRESH: { label: "프레시", example: "바다 · 풀잎처럼 청량한 향", tint: "oklch(91% 0.02 210)" },
+  FOUGERE: { label: "푸제르", example: "라벤더 · 이끼가 어우러진 마른 향", tint: "oklch(89% 0.02 140)" },
+  CHYPRE: { label: "시프레", example: "이끼 · 가죽 느낌의 중후한 향", tint: "oklch(88% 0.018 300)" },
+  GOURMAND: { label: "구르망", example: "카라멜 · 초콜릿 같은 달콤한 향", tint: "oklch(89% 0.022 70)" },
 };
 
 const QUESTIONS: { title: string; options: NoteFamily[] }[] = [
@@ -143,7 +144,7 @@ export default function OnboardingWizard() {
                   justifyContent: "space-between",
                   gap: 16,
                   padding: 16,
-                  minHeight: 108,
+                  minHeight: 124,
                   borderRadius: 14,
                   border: `1.5px solid ${isSel ? "var(--accent)" : "var(--border)"}`,
                   background: isSel ? "var(--accent-soft)" : "var(--surface)",
@@ -167,7 +168,10 @@ export default function OnboardingWizard() {
                     </div>
                   )}
                 </div>
-                <div style={{ fontSize: 14.5, fontWeight: 600, textAlign: "left" }}>{fam.label}</div>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 3 }}>{fam.label}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--text-faint)", lineHeight: 1.4 }}>{fam.example}</div>
+                </div>
               </button>
             );
           })}
