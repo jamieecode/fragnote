@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { FAMILY_TINTS, riskFor, openedMonthsLabel } from "@/lib/collection";
 import { scoreNotes, diversify, type RecommendItem } from "@/lib/recommend-scoring";
+import { weatherFamilyBonus, type WeatherSnapshot } from "@/lib/weather-rules";
 
 export type { RecommendItem } from "@/lib/recommend-scoring";
 
@@ -46,6 +47,17 @@ function daysSince(date: Date): number {
   return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+// 데일리 모드의 정상 경로와 폴백(취향 매칭 대체) 경로 둘 다에서 날씨 보너스를
+// 반영해야 해서 공용 함수로 뺀다 — 하나에만 적용하면 폴백으로 빠진 유저(막 온보딩을
+// 마쳐 보유 향수가 없는, 이 기능이 특히 도움이 될 유저)만 날씨가 안 반영되는 문제가 생긴다.
+function applyWeatherBonus(item: RecommendItem, weather: WeatherSnapshot | null): RecommendItem {
+  if (!weather || !item.family) return item;
+  const weatherBonus = weatherFamilyBonus(item.family, weather);
+  const reasons =
+    weatherBonus >= 10 ? [...item.reasons, `오늘 날씨(${weather.label} ${weather.tempC}°)와 잘 맞아요`] : item.reasons;
+  return { ...item, score: item.score + weatherBonus, reasons };
+}
+
 // 취향 매칭 모드는 이 함수가 "다양화 전 전체 목록"을 반환하고, 실제 화면에 몇 개를
 // 어떻게 다양화해서 보여줄지는 호출부(화면의 탭 구성)에 맡긴다 — 여기서 미리
 // 일부 개수로 다양화해버리면, 그 결과를 다시 잘라 쓰는 화면에서 다양성이
@@ -53,7 +65,7 @@ function daysSince(date: Date): number {
 export async function getRecommendations(
   userId: string,
   mode: RecommendMode,
-  { limit = 10 }: { limit?: number } = {}
+  { limit = 10, weather = null }: { limit?: number; weather?: WeatherSnapshot | null } = {}
 ): Promise<{ mode: RecommendMode; usedFallback: boolean; items: RecommendItem[] }> {
   const prefWeights = await getUserPreferenceWeights(userId);
 
@@ -63,8 +75,9 @@ export async function getRecommendations(
   }
 
   // mode === 'daily': 보유한 향수 중에서만 추천 — 취향 매칭 + 최근 미사용 +
-  // 변질 위험 가중치를 더해 오늘 뿌리기 좋은 순으로 정렬한다.
-  // 날씨 가중치는 OpenWeatherMap 연동 전까지는 자리만 만들어두고 0으로 둔다 (TODO).
+  // 변질 위험 + (넘겨받은 경우) 날씨 가중치를 더해 오늘 뿌리기 좋은 순으로 정렬한다.
+  // weather는 브라우저 위치 정보가 있어야 얻을 수 있어 호출부(클라이언트)가 넘겨줄
+  // 때만 반영되고, 없으면(null) 날씨 보너스 없이 기존과 동일하게 동작한다.
   const collections = await prisma.collection.findMany({
     where: { userId },
     include: {
@@ -75,7 +88,10 @@ export async function getRecommendations(
 
   if (collections.length === 0) {
     // 보유 향수가 없으면 데일리 모드를 취향 매칭으로 대체한다 (CLAUDE.md 폴백 규칙).
-    const scored = await scoreCatalog(userId, prefWeights);
+    // 이 경로도 날씨가 있으면 반영한다 — 없으면 applyWeatherBonus가 원본을 그대로 돌려준다.
+    const scored = (await scoreCatalog(userId, prefWeights))
+      .map((it) => applyWeatherBonus(it, weather))
+      .sort((a, b) => b.score - a.score);
     return { mode: "daily", usedFallback: true, items: diversify(scored, limit, Math.max(1, Math.ceil(limit / 3))) };
   }
 
@@ -105,9 +121,7 @@ export async function getRecommendations(
       bonus += 10;
     }
 
-    // TODO: 날씨(OpenWeatherMap) 연동 후 계절/기온에 맞는 계열 보너스 추가
-
-    return {
+    const item: RecommendItem = {
       perfumeId: c.perfumeId,
       collectionId: c.id,
       name: c.perfume.name,
@@ -119,6 +133,7 @@ export async function getRecommendations(
       owned: true,
       reasons,
     };
+    return applyWeatherBonus(item, weather);
   });
 
   items.sort((a, b) => b.score - a.score);

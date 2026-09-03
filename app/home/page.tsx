@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRecommendations } from "@/lib/recommend";
+import { toHomeRecItem } from "@/lib/recommend-scoring";
 import { FAMILY_TINTS } from "@/lib/collection";
 import { kstParts } from "@/lib/stats-helpers";
 import HomeView from "./HomeView";
@@ -49,12 +50,7 @@ export default async function HomePage() {
     <HomeView
       todayLabel={todayLabel}
       nickname={user.nickname}
-      recItems={daily.items.map((it) => ({
-        name: it.name,
-        brand: it.brand,
-        tint: it.tint,
-        reason: it.reasons[0] ?? (daily.usedFallback ? "취향에 잘 맞는 향수예요" : "오늘 뿌려보기 좋아요"),
-      }))}
+      recItems={daily.items.map((it) => toHomeRecItem(it, daily.usedFallback))}
       recent={recentLogs.map((log) => ({
         name: log.collection.perfume.name,
         tint: log.collection.perfume.family ? FAMILY_TINTS[log.collection.perfume.family] : "var(--border-soft)",

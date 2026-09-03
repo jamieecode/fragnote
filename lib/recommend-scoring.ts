@@ -17,6 +17,20 @@ export type RecommendItem = {
   reasons: string[];
 };
 
+// 홈 화면 카드 하나에 필요한 만큼만 줄인 모양 — 서버 초기 렌더(app/home/page.tsx)와
+// 날씨 반영 후 클라이언트 재조회(app/home/weather-actions.ts) 두 곳이 같은 모양을
+// 만들어야 해서, 그 변환 로직도 이 파일에서 하나로 공유한다.
+export type HomeRecItem = { name: string; brand: string; tint: string; reason: string };
+
+export function toHomeRecItem(item: RecommendItem, usedFallback: boolean): HomeRecItem {
+  return {
+    name: item.name,
+    brand: item.brand,
+    tint: item.tint,
+    reason: item.reasons[0] ?? (usedFallback ? "취향에 잘 맞는 향수예요" : "오늘 뿌려보기 좋아요"),
+  };
+}
+
 export type NoteWithIntensity = { noteId: string; intensity: number };
 
 // 같은 노트가 TOP/MIDDLE/BASE에 중복 등재된 경우(시딩 스크립트가 노트 하나를
