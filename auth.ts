@@ -1,12 +1,32 @@
 import NextAuth from "next-auth";
 import Kakao from "next-auth/providers/kakao";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+
+// 카카오/구글 OAuth 앱이 아직 없어도 화면을 볼 수 있게 하는 로컬 전용 우회 로그인.
+// 프로덕션에서는 절대 등록되지 않는다 — provider 배열에서부터 빠짐.
+const isDev = process.env.NODE_ENV !== "production";
 
 // Prisma Adapter 없이 JWT 세션 전략 사용 (CLAUDE.md 설계 결정).
 // Account/Session 테이블 없이, signIn 콜백에서 User 테이블에 직접 upsert한다.
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Kakao, Google],
+  providers: [
+    Kakao,
+    Google,
+    ...(isDev
+      ? [
+          Credentials({
+            id: "dev",
+            name: "개발용 로그인",
+            credentials: {},
+            async authorize() {
+              return { id: "dev-user", email: "dev@local.test", name: "테스트유저" };
+            },
+          }),
+        ]
+      : []),
+  ],
   session: { strategy: "jwt" },
   pages: { error: "/auth-error" },
   callbacks: {
@@ -19,15 +39,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // 직접 확인하도록 권장함 — 구글은 profile.email_verified, 카카오는
       // kakao_account.is_email_verified.
       const emailVerified =
-        account.provider === "google"
-          ? profile?.email_verified === true
-          : account.provider === "kakao"
-            ? (profile as { kakao_account?: { is_email_verified?: boolean } })?.kakao_account
-                ?.is_email_verified === true
-            : false;
+        account.provider === "dev" // 로컬 전용 우회 로그인 — 실제 OAuth가 아니라 검증 항목이 없음
+          ? true
+          : account.provider === "google"
+            ? profile?.email_verified === true
+            : account.provider === "kakao"
+              ? (profile as { kakao_account?: { is_email_verified?: boolean } })?.kakao_account
+                  ?.is_email_verified === true
+              : false;
       if (!emailVerified) return false;
 
-      const provider = account.provider === "kakao" ? "KAKAO" : "GOOGLE";
+      const provider = account.provider === "kakao" ? "KAKAO" : "GOOGLE"; // AuthProvider enum엔 dev용 값이 없어 GOOGLE로 저장
       const dbUser = await prisma.user.upsert({
         where: { email: user.email },
         update: {

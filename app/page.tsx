@@ -87,6 +87,18 @@ export default async function LoginPage() {
               구글로 시작하기
             </button>
           </form>
+          {process.env.NODE_ENV !== "production" && (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("dev");
+              }}
+            >
+              <button type="submit" style={{ width: "100%", padding: 12, border: "1.5px dashed var(--border)", background: "none", borderRadius: 14, color: "var(--text-muted)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                개발용으로 시작하기 (카카오/구글 미연동 시)
+              </button>
+            </form>
+          )}
         </div>
 
         <div style={{ padding: "0 32px 28px", textAlign: "center", fontSize: 11, color: "var(--text-faint)", lineHeight: 1.6 }}>
