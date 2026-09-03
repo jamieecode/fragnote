@@ -7,7 +7,9 @@ import { FAMILY_TINTS } from "@/lib/collection";
 export type CatalogResult = {
   id: string;
   name: string;
+  nameEn: string | null;
   brand: string;
+  brandEn: string | null;
   tint: string;
 };
 
@@ -33,7 +35,9 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
   return perfumes.map((p) => ({
     id: p.id,
     name: p.name,
+    nameEn: p.nameEn,
     brand: p.brand.name,
+    brandEn: p.brand.nameEn,
     tint: p.family ? FAMILY_TINTS[p.family] : "var(--border-soft)",
   }));
 }

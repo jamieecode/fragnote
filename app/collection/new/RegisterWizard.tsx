@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import DatePicker from "@/components/DatePicker";
 import { searchCatalog, createCollectionEntry, type CatalogResult } from "./actions";
 
 type Selected = { id: string; name: string; brand: string; tint: string };
@@ -147,8 +148,14 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
                 >
                   <div style={{ width: 42, height: 42, borderRadius: 10, background: p.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                    <div style={{ fontSize: 11.5, color: "var(--text-faint)" }}>{p.brand}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, lineHeight: 1.35 }}>
+                      {p.name}
+                      {p.nameEn && <span style={{ fontWeight: 400, color: "var(--text-muted)" }}> · {p.nameEn}</span>}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--text-faint)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>
+                      {p.brand}
+                      {p.brandEn && ` · ${p.brandEn}`}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -277,7 +284,7 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
             </div>
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>구매일</div>
-              <input type="date" value={purchasedAt} onChange={(e) => setPurchasedAt(e.target.value)} style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--border)", borderRadius: 12, padding: "13px 14px", fontSize: 14.5, background: "var(--surface)", color: "var(--text)" }} />
+              <DatePicker value={purchasedAt} onChange={setPurchasedAt} placeholder="구매일 선택" />
             </div>
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>가격</div>
