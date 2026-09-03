@@ -98,10 +98,10 @@ export default function RecommendView({
       )}
 
       {isTaste && (
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "0 20px 4px", marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "0 20px 4px", marginBottom: 16 }}>
           <button
             onClick={() => setActiveFamily("all")}
-            style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer", ...(activeFamily === "all" ? activeModeStyle : inactiveModeStyle) }}
+            style={{ padding: "8px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer", ...(activeFamily === "all" ? activeModeStyle : inactiveModeStyle) }}
           >
             전체
           </button>
@@ -109,7 +109,7 @@ export default function RecommendView({
             <button
               key={f.key}
               onClick={() => setActiveFamily(f.key)}
-              style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer", ...(activeFamily === f.key ? activeModeStyle : inactiveModeStyle) }}
+              style={{ padding: "8px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer", ...(activeFamily === f.key ? activeModeStyle : inactiveModeStyle) }}
             >
               {f.label}
             </button>
