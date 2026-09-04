@@ -11,32 +11,34 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "seed:notes": "node scripts/generate-notes.mjs",
-    "db:seed": "node scripts/seed-catalog.mjs"
+    "db:seed": "node scripts/seed-catalog.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@vercel/blob": "^2.8.0",
     "next": "16.3.1",
+    "next-auth": "5.0.0-beta.32",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "@prisma/client": "^7.9.1",
-    "@prisma/adapter-pg": "^7.9.1",
-    "pg": "^8.23.0",
-    "next-auth": "5.0.0-beta.32",
-    "@vercel/blob": "^2.8.0",
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "prisma": "^7.9.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "prisma": "^7.9.1",
-    "xlsx": "^0.18.5",
-    "@anthropic-ai/sdk": "^0.120.0",
-    "@types/pg": "^8.23.1",
-    "dotenv": "^17.4.2"
+    "vitest": "^4.1.11",
+    "xlsx": "^0.18.5"
   }
 }

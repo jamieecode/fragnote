@@ -67,40 +67,30 @@ export function diversify<T extends { family: NoteFamily | null; score: number }
   limit: number,
   maxPerFamily: number
 ): T[] {
-  const result: T[] = [];
-  const familyCount = new Map<string, number>();
+  const capped: T[] = [];
   const overflow: T[] = [];
+  const familyCount = new Map<string, number>();
 
+  // limit에서 멈추지 않고 sorted 전체를 훑는다 — 캡을 지킨 항목이 총 몇 개나
+  // 되는지 먼저 다 알아야, 부족한 만큼만 overflow로 채울지 판단할 수 있다.
   for (const item of sorted) {
-    if (result.length >= limit) break;
     const key = item.family ?? "unknown";
     const count = familyCount.get(key) ?? 0;
     if (count < maxPerFamily) {
-      result.push(item);
+      capped.push(item);
       familyCount.set(key, count + 1);
     } else {
       overflow.push(item);
     }
   }
 
-  if (result.length >= limit) return result;
+  if (capped.length >= limit) return capped.slice(0, limit);
 
-  // 계열 캡 때문에 limit을 다 못 채운 경우에만 overflow로 나머지를 채운다.
-  // result/overflow 둘 다 이미 점수 내림차순이므로, 뒤에 그냥 이어붙이면 overflow의
-  // 고득점 항목이 result의 저득점 항목보다 뒤로 밀려 정렬이 깨진다 — 병합정렬로 합친다.
-  const merged: T[] = [];
-  let ri = 0;
-  let oi = 0;
-  while (merged.length < limit && (ri < result.length || oi < overflow.length)) {
-    const r = result[ri];
-    const o = overflow[oi];
-    if (o === undefined || (r !== undefined && r.score >= o.score)) {
-      merged.push(r);
-      ri++;
-    } else {
-      merged.push(o);
-      oi++;
-    }
-  }
-  return merged;
+  // 캡을 지킨 것만으론 limit을 못 채우는 경우에만 overflow(캡에 걸려 밀린 항목,
+  // 점수 내림차순)로 나머지를 채운다. capped가 항상 overflow보다 앞에 온다 —
+  // 다양성이 순수 점수보다 우선이라는 diversify의 목적상, 캡을 지킨 저점수 항목이
+  // 캡에 걸린 고점수 항목보다 앞에 오는 게 맞다. (예전에 점수로 병합했을 때, 캡에
+  // 걸려 밀려난 고점수 항목이 이미 캡을 통과한 다른 계열 항목을 다시 밀어내
+  // 캡 자체를 무력화하는 회귀가 있었다.)
+  return capped.concat(overflow.slice(0, limit - capped.length));
 }
