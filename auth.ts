@@ -31,7 +31,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: { error: "/auth-error" },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (!user.email || !account) return false;
+      if (!account) return false;
+
+      // 카카오는 이메일(account_email) 동의항목이 "비즈 앱"(사업자 정보 등록) 전환
+      // 후에만 열려서, 개인 개발자 앱은 이메일을 절대 받을 수 없다(카카오 공식 문서:
+      // "개인정보 동의항목 추가 신청은 사업자 정보가 등록된 비즈 앱만 가능"). 이메일이
+      // 안 오면 카카오가 항상 주는 고유 회원번호로 내부용 가짜 이메일을 만들어 계정을
+      // 구분한다 — 실제 이메일이 아니라 남이 흉내낼 수 없으니 검증 대상에서 제외한다.
+      const kakaoProfile =
+        account.provider === "kakao"
+          ? (profile as { id?: number | string; kakao_account?: { email?: string; is_email_verified?: boolean } })
+          : null;
+
+      let email = user.email;
+      let usingSyntheticEmail = false;
+      if (!email && kakaoProfile?.id != null) {
+        email = `kakao-${kakaoProfile.id}@kakao.local`;
+        usingSyntheticEmail = true;
+      }
+      if (!email) return false;
 
       // 이메일 소유 여부가 검증되지 않은 상태로 upsert하면, 공격자가 피해자의
       // 이메일로 카카오/구글 계정을 만들어 로그인하는 것만으로 피해자의 기존
@@ -39,28 +57,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // 직접 확인하도록 권장함 — 구글은 profile.email_verified, 카카오는
       // kakao_account.is_email_verified.
       const emailVerified =
-        account.provider === "dev" // 로컬 전용 우회 로그인 — 실제 OAuth가 아니라 검증 항목이 없음
+        usingSyntheticEmail
           ? true
-          : account.provider === "google"
-            ? profile?.email_verified === true
-            : account.provider === "kakao"
-              ? (profile as { kakao_account?: { is_email_verified?: boolean } })?.kakao_account
-                  ?.is_email_verified === true
-              : false;
+          : account.provider === "dev" // 로컬 전용 우회 로그인 — 실제 OAuth가 아니라 검증 항목이 없음
+            ? true
+            : account.provider === "google"
+              ? profile?.email_verified === true
+              : account.provider === "kakao"
+                ? kakaoProfile?.kakao_account?.is_email_verified === true
+                : false;
       if (!emailVerified) return false;
 
       const provider = account.provider === "kakao" ? "KAKAO" : "GOOGLE"; // AuthProvider enum엔 dev용 값이 없어 GOOGLE로 저장
       const dbUser = await prisma.user.upsert({
-        where: { email: user.email },
+        where: { email },
         update: {
           provider,
-          nickname: user.name ?? user.email,
+          nickname: user.name ?? email,
           profileImageUrl: user.image ?? null,
         },
         create: {
-          email: user.email,
+          email,
           provider,
-          nickname: user.name ?? user.email,
+          nickname: user.name ?? email,
           profileImageUrl: user.image ?? null,
         },
       });
