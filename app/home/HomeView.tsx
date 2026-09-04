@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 import { getWeatherAdjustedDaily, type HomeRecItem } from "./weather-actions";
 import { CITIES, type WeatherSnapshot } from "@/lib/weather-rules";
@@ -119,12 +120,12 @@ export default function HomeView({
           <div style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 4 }}>{todayLabel}</div>
           <div style={{ fontWeight: 700, fontSize: 24 }}>안녕하세요{nickname ? `, ${nickname}님` : ""}</div>
         </div>
-        <div style={{ width: 38, height: 38, borderRadius: "50%", background: "var(--border-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-faint)" }}>
+        <Link href="/mypage" aria-label="마이페이지로 이동" style={{ width: 38, height: 38, borderRadius: "50%", background: "var(--border-soft)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-faint)" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21a8 8 0 1 0-16 0" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-        </div>
+        </Link>
       </div>
 
       {locationMode !== "pending" && (
