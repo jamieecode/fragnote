@@ -1,5 +1,6 @@
 "use server";
 
+import { del } from "@vercel/blob";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { recalcCollectionMl, manuallyAdjustCollection, percentOf } from "@/lib/collection";
@@ -26,9 +27,16 @@ export async function updateLabel(collectionId: string, label: string) {
 export async function deleteCollectionEntry(collectionId: string) {
   const userId = (await auth())?.user?.id;
   if (!userId) throw new Error("로그인이 필요해요");
-  await requireOwnedCollection(collectionId, userId);
+  const collection = await requireOwnedCollection(collectionId, userId);
 
   await prisma.collection.delete({ where: { id: collectionId } });
+
+  // 등록된 사진이 있으면 DB 삭제와 별개로 Blob 저장소에서도 정리한다.
+  // 실패해도 컬렉션 삭제 자체는 이미 끝났으니 무시한다 (고아 파일 정리는 부가 작업).
+  if (collection.photoUrl) {
+    await del(collection.photoUrl).catch(() => {});
+  }
+
   revalidatePath("/collection");
 }
 

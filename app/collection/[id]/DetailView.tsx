@@ -26,6 +26,7 @@ type Item = {
   brand: string;
   tint: string;
   familyLabel: string;
+  photoUrl: string | null;
   isPreOwned: boolean;
   label: string | null;
   percent: number;
@@ -174,7 +175,12 @@ export default function DetailView({
       )}
 
       <div style={{ padding: "8px 20px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 76, height: 76, borderRadius: 18, background: item.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
+        {item.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.photoUrl} alt="" style={{ width: 76, height: 76, borderRadius: 18, objectFit: "cover", flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: 76, height: 76, borderRadius: 18, background: item.tint, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{BOTTLE_ICON}</div>
+        )}
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2 }}>{item.brand}</div>
           <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 6 }}>{displayName}</div>

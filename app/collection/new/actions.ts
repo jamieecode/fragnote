@@ -1,5 +1,6 @@
 "use server";
 
+import { put } from "@vercel/blob";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { FAMILY_TINTS } from "@/lib/collection";
@@ -42,6 +43,29 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
   }));
 }
 
+// BLOB_READ_WRITE_TOKEN이 아직 없어도(로컬 개발 초기 등) 등록 자체가 막히면 안 되므로,
+// 토큰이 없거나 업로드가 실패하면 사진 없이 진행하도록 null을 돌려준다 — 던지지 않음.
+export async function uploadCollectionPhoto(formData: FormData): Promise<string | null> {
+  const userId = (await auth())?.user?.id;
+  if (!userId) throw new Error("로그인이 필요해요");
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) return null;
+  if (!file.type.startsWith("image/")) return null;
+
+  try {
+    const ext = file.name.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8) || "jpg";
+    const blob = await put(`collection-photos/${userId}-${Date.now()}.${ext}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+    });
+    return blob.url;
+  } catch {
+    return null;
+  }
+}
+
 export async function createCollectionEntry(input: {
   perfumeId: string;
   isPreOwned: boolean;
@@ -49,6 +73,7 @@ export async function createCollectionEntry(input: {
   volumeMl: number;
   purchasedAt: string;
   price: number | null;
+  photoUrl: string | null;
 }) {
   const userId = (await auth())?.user?.id;
   if (!userId) throw new Error("로그인이 필요해요");
@@ -72,6 +97,7 @@ export async function createCollectionEntry(input: {
       openedAt,
       purchasedAt,
       price: input.price,
+      photoUrl: input.photoUrl,
     },
   });
 

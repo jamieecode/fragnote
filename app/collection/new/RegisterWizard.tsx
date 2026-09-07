@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import DatePicker from "@/components/DatePicker";
-import { searchCatalog, createCollectionEntry, type CatalogResult } from "./actions";
+import { searchCatalog, createCollectionEntry, uploadCollectionPhoto, type CatalogResult } from "./actions";
 
 type Selected = { id: string; name: string; brand: string; tint: string };
 
@@ -36,9 +36,33 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
   const [volume, setVolume] = useState("100");
   const [purchasedAt, setPurchasedAt] = useState("");
   const [price, setPrice] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoPreviewUrlRef = useRef<string | null>(null);
+
+  const pickPhoto = (file: File | null) => {
+    setPhotoPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      const next = file ? URL.createObjectURL(file) : null;
+      photoPreviewUrlRef.current = next;
+      return next;
+    });
+    setPhotoFile(file);
+    // 같은 파일을 지웠다가 다시 고를 때도 change 이벤트가 발생하도록 초기화한다.
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  };
+
+  // 등록 완료 후 "상세보기"로 이동해 이 컴포넌트가 언마운트될 때도
+  // 마지막으로 만든 미리보기 objectURL을 정리한다.
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrlRef.current) URL.revokeObjectURL(photoPreviewUrlRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (step !== "search") return;
@@ -65,6 +89,18 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
     if (!selected) return;
     setSubmitting(true);
     setSubmitError(null);
+    // 사진 업로드가 실패해도(용량 초과, 네트워크 오류 등) 등록 자체는 막지 않는다 —
+    // 사진 없이라도 등록은 성공해야 하므로 별도 try로 감싸 상위 catch로 전파되지 않게 한다.
+    let photoUrl: string | null = null;
+    if (photoFile) {
+      try {
+        const formData = new FormData();
+        formData.set("photo", photoFile);
+        photoUrl = await uploadCollectionPhoto(formData);
+      } catch {
+        photoUrl = null;
+      }
+    }
     try {
       const id = await createCollectionEntry({
         perfumeId: selected.id,
@@ -73,6 +109,7 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
         volumeMl: Number(volume) || 100,
         purchasedAt,
         price: price ? Number(price) : null,
+        photoUrl,
       });
       setStep("done");
       router.prefetch(`/collection/${id}`);
@@ -94,6 +131,7 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
     setVolume("100");
     setPurchasedAt("");
     setPrice("");
+    pickPhoto(null);
     setCreatedId(null);
   };
 
@@ -278,6 +316,49 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
           <div style={{ fontWeight: 700, fontSize: 24, marginBottom: 24 }}>세부 정보</div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>사진 (선택)</div>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  border: "1.5px dashed var(--border)",
+                  borderRadius: 12,
+                  padding: photoPreviewUrl ? 8 : "13px 14px",
+                  cursor: "pointer",
+                }}
+              >
+                {photoPreviewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photoPreviewUrl} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                ) : (
+                  <div style={{ color: "var(--text-faint)", flexShrink: 0, display: "flex" }}>{BOTTLE_ICON}</div>
+                )}
+                <span style={{ fontSize: 13, color: "var(--text-muted)", flex: 1 }}>
+                  {photoPreviewUrl ? "사진 변경하기" : "향수 사진 추가하기"}
+                </span>
+                {photoPreviewUrl && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      pickPhoto(null);
+                    }}
+                    style={{ border: "none", background: "none", color: "var(--text-faint)", fontSize: 12, cursor: "pointer", padding: 4 }}
+                  >
+                    제거
+                  </button>
+                )}
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>용량 (ml)</div>
               <input type="number" value={volume} onChange={(e) => setVolume(e.target.value)} style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--border)", borderRadius: 12, padding: "13px 14px", fontSize: 14.5, background: "var(--surface)", color: "var(--text)" }} />

@@ -26,6 +26,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
         brand: collection.perfume.brand.name,
         tint: collection.perfume.family ? FAMILY_TINTS[collection.perfume.family] : "var(--border-soft)",
         familyLabel: collection.perfume.family ? FAMILY_LABELS[collection.perfume.family] : "미분류",
+        photoUrl: collection.photoUrl,
         isPreOwned: collection.isPreOwned,
         label: collection.label,
         percent: percentOf(collection.currentMl, collection.totalMl),
