@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { NoteFamily } from "@prisma/client";
 import Link from "next/link";
 import { saveTastePreferences } from "./actions";
+import { logout } from "@/lib/auth-actions";
 import { pageStyle, centeredMessageStyle, primaryButtonStyle } from "@/lib/ui-styles";
 
 // example: 계열 이름이 생소한 사람도 감 잡을 수 있게 붙이는 대표 노트 예시
@@ -101,8 +102,8 @@ export default function OnboardingWizard() {
   return (
     <div style={{ ...pageStyle, padding: "28px 20px 32px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 36 }}>
-        <div style={{ width: 32, height: 32, flexShrink: 0, display: "flex", alignItems: "center" }}>
-          {step > 0 && (
+        <div style={{ minWidth: 32, flexShrink: 0, display: "flex", alignItems: "center" }}>
+          {step > 0 ? (
             <button
               onClick={goBack}
               aria-label="이전 질문으로"
@@ -112,6 +113,14 @@ export default function OnboardingWizard() {
                 <path d="M15 5l-7 7 7 7" />
               </svg>
             </button>
+          ) : (
+            // 온보딩을 끝내지 않으면 다른 화면으로 못 가므로, 로그인은 유지한 채로
+            // 나갈 수 있는 로그아웃 버튼을 첫 문항에서만(뒤로가기 버튼이 없는 자리에) 보여준다.
+            <form action={logout}>
+              <button type="submit" style={{ border: "none", background: "none", padding: 0, fontSize: 12, color: "var(--text-faint)", cursor: "pointer", whiteSpace: "nowrap" }}>
+                로그아웃
+              </button>
+            </form>
           )}
         </div>
         <div style={{ display: "flex", gap: 6, flex: 1 }}>

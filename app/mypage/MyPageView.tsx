@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
-import { logout } from "./actions";
+import { logout } from "@/lib/auth-actions";
 import { subscribeTheme, getThemeSnapshot, getThemeServerSnapshot, setDarkMode as applyDarkMode } from "@/lib/theme";
 
 export default function MyPageView({ nickname, email }: { nickname: string; email: string }) {
