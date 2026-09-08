@@ -3,7 +3,7 @@
 내 향수장을 관리하고, 취향과 날씨에 맞는 향수를 추천받는 개인용 향수 앱.
 포트폴리오/이직용 사이드 프로젝트.
 
-상세 기획은 @docs/planning.md 참고 (유저 시나리오, 화면 설계, 경쟁 서비스 분석 등 전체 내용).
+상세 기획은 @docs/Fragnote_기획서.md 참고 (유저 시나리오, 화면 설계, 경쟁 서비스 분석 등 전체 내용).
 
 ## 컨셉
 - 내 향수장(컬렉션) + 추천(취향 매칭 + 날씨 반영) + 잔량/변질 관리
@@ -44,5 +44,5 @@ prisma/schema.prisma 참고. 주요 모델: User, Brand, Note, Perfume, PerfumeN
 prisma/schema.prisma
 scripts/generate-notes.mjs   # 데이터 시딩용 LLM 노트 생성 스크립트
 scripts/data/                # 향수 카탈로그 체크리스트(xlsx)
-docs/planning.md             # 전체 기획서
+docs/Fragnote_기획서.md      # 전체 기획서
 ```

@@ -2,7 +2,7 @@
 
 내 향수장을 관리하고, 취향과 날씨에 맞는 향수를 추천받는 개인용 향수 앱.
 
-상세 기획은 [docs/planning.md](docs/planning.md), 핵심 설계 결정은 [CLAUDE.md](CLAUDE.md) 참고.
+상세 기획은 [docs/Fragnote_기획서.md](docs/Fragnote_기획서.md), 핵심 설계 결정은 [CLAUDE.md](CLAUDE.md) 참고.
 
 ## 스택
 
@@ -10,6 +10,7 @@
 - Prisma + PostgreSQL (로컬: Docker, 배포: Neon)
 - Auth.js — 카카오/구글 로그인, JWT 세션 전략
 - OpenWeatherMap (날씨 기반 추천)
+- Vercel Blob (이미지)
 - Recharts
 
 ## 로컬 개발 환경 설정
@@ -58,13 +59,13 @@ npm run dev
 
 로컬(`http://localhost:3000`) 기준으로 등록해둔 설정들은 실제 도메인으로 배포할 때 별도로 추가해야 한다. **기존 로컬용 설정은 지우지 말고 추가**하면, 로컬 개발과 배포 환경을 동시에 계속 쓸 수 있다.
 
-- [ ] **DATABASE_URL** — 로컬 Docker 대신 Neon 등 실제 Postgres 연결 문자열로 교체
-- [ ] **카카오 로그인 (Kakao Developers > 카카오 로그인 > Redirect URI)**
+- [x] **DATABASE_URL** — 로컬 Docker 대신 Neon 등 실제 Postgres 연결 문자열로 교체
+- [x] **카카오 로그인 (Kakao Developers > 카카오 로그인 > Redirect URI)**
   - `https://{배포 도메인}/api/auth/callback/kakao` 추가
-- [ ] **구글 로그인 (Google Cloud Console > 사용자 인증 정보 > 해당 OAuth 클라이언트)**
+- [x] **구글 로그인 (Google Cloud Console > 사용자 인증 정보 > 해당 OAuth 클라이언트)**
   - 승인된 자바스크립트 원본에 `https://{배포 도메인}` 추가
   - 승인된 리디렉션 URI에 `https://{배포 도메인}/api/auth/callback/google` 추가
-- [ ] **AUTH_SECRET** — 배포 환경에서도 값이 설정되어 있는지 확인 (로컬과 같은 값을 써도 되지만, 별도 값을 새로 생성해도 무방)
-- [ ] **OPENWEATHER_API_KEY / ANTHROPIC_API_KEY** — 도메인과 무관하게 그대로 복사하면 됨
+- [x] **AUTH_SECRET** — 배포 환경에서도 값이 설정되어 있는지 확인 (로컬과 같은 값을 써도 되지만, 별도 값을 새로 생성해도 무방)
+- [x] **OPENWEATHER_API_KEY / ANTHROPIC_API_KEY** — 도메인과 무관하게 그대로 복사하면 됨
 - [ ] 배포 후 실제 도메인에서 카카오/구글 로그인이 되는지, 날씨 연동이 정상 동작하는지 직접 확인
 - [ ] 로그인 화면의 "개발용으로 시작하기" 버튼이 배포 환경(`NODE_ENV=production`)에서 실제로 안 보이는지 확인
