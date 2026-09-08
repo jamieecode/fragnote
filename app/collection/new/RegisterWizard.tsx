@@ -140,7 +140,13 @@ export default function RegisterWizard({ initialPerfume }: { initialPerfume: Sel
       {step !== "done" && (
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "22px 20px 8px" }}>
           <div style={{ width: 32, height: 32, flexShrink: 0 }}>
-            {step !== "search" && (
+            {step === "search" ? (
+              <button onClick={() => router.push("/collection")} aria-label="등록 취소하고 닫기" style={{ width: 32, height: 32, border: "none", background: "none", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)", cursor: "pointer" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            ) : (
               <button onClick={back} aria-label="이전 단계로" style={{ width: 32, height: 32, border: "none", background: "none", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text)", cursor: "pointer" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M15 5l-7 7 7 7" />
