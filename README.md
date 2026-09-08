@@ -4,6 +4,23 @@
 
 상세 기획은 [docs/Fragnote_기획서.md](docs/Fragnote_기획서.md), 핵심 설계 결정은 [CLAUDE.md](CLAUDE.md) 참고.
 
+## 화면
+
+| 홈 | 내 향수장 |
+| --- | --- |
+| ![홈 화면](docs/screenshots/home.jpg) | ![컬렉션 화면](docs/screenshots/collection.jpg) |
+
+| 추천 | 통계 |
+| --- | --- |
+| ![추천 화면](docs/screenshots/recommend.jpg) | ![통계 화면](docs/screenshots/stats.jpg) |
+
+## 핵심 기능
+
+- **취향 매칭 + 데일리 추천 통합 엔진**: 취향 기반 추천과 날씨·최근 미사용·변질 위험을 반영한 데일리 추천을 하나의 엔진에서 파라미터로 분기해 처리
+- **잔량 자동 추정**: 스프레이 횟수 × 용량 기반 자동 추정과 수동 보정을 결합한 하이브리드 방식으로 관리
+- **향 변질 관리**: 개봉일 기준 경과 개월 수로 변질 위험도를 계산해 표시하고, 데일리 추천 가중치에도 반영
+- **동일 향수 다중 보유 지원**: 정품/미니어처처럼 같은 향수를 여러 개 등록해도 구분 관리 가능
+
 ## 스택
 
 - Next.js (App Router + Server Actions), TypeScript
